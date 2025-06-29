@@ -12,6 +12,9 @@ start:
     mov ss,ax
     mov sp, 0x7C00      ; Stack grows down
 
+    mov si, boot_msg
+    call print_string
+
     call enable_a20
     call load_gdt
     call enter_protected_mode
@@ -93,6 +96,22 @@ DATA_SEG equ 0x10
 
 ; Offset for protected_entry in the kernel binary
 protected_entry_offset equ 0x8000
+
+; Print a string using BIOS teletype (int 0x10)
+print_string:
+    pusha
+.print_loop:
+    lodsb
+    or al, al
+    jz .done
+    mov ah, 0x0E
+    int 0x10
+    jmp .print_loop
+.done:
+    popa
+    ret
+
+boot_msg db "Bootloader OK", 0
 
 ; -------------------------------------------------------------------
 ; Pad to 512 bytes + signature
