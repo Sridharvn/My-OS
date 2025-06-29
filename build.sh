@@ -1,14 +1,22 @@
 set -e
 
 echo "[+] Cleaning previous build..."
-rm -rf build/kernel.o build/kernel.bin
+rm -rf build
+mkdir -p build
+
+echo "[+] Assembling bootloader (real mode)..."
+nasm -f bin boot/boot.asm -o build/boot.bin
+
+echo "[+] Assembling protected mode setup..."
+nasm -f elf32 boot/protected.asm -o build/protected.o
 
 echo "[+] Compiling kernel..."
-clang -target x86_64-elf \
-      -ffreestanding -nostdlib -fno-exceptions -fno-rtti -O2 \
-      -c kernel/kernel.c -o build/kernel.o
+clang -target i386-elf -ffreestanding -m32 -c kernel.c -o build/kernel.o
 
-echo "[+] Linking Kernel..."
-ld.lld -T linker.ld -o build/kernel.bin build/kernel.o
+echo "[+] Linking kernel and protected mode setup..."
+ld.lld -T linker.ld -m elf_i386 -nostdlib -o build/kernel.bin build/protected.o build/kernel.o
 
-echo "[✅] Build complete. Output -> build/kernel.bin"
+echo "[+] Creating bootable image..."
+cat build/boot.bin build/kernel.bin > build/os-image.bin
+
+echo "[✅] Build complete. Output -> build/os-image.bin"
