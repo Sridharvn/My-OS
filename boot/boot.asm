@@ -2,7 +2,7 @@
 bits 16
 org 0x7C00
 
-extern protected_main
+
 
 start:
     cli ; Disable interrupts during setup
@@ -65,8 +65,8 @@ init_pm:
 
     ; Load the stack
     mov esp,0x90000
-     ; Jump to protected_main (defined in protected.asm)
-     call protected_main
+    ; Jump to protected_entry (in pm_entry.asm) at 0x08:0x8000
+    jmp 0x08:protected_entry_offset
 .hang:
     hlt
     jmp .hang
@@ -90,6 +90,9 @@ gdt_descriptor:
 
 CODE_SEG equ 0x08
 DATA_SEG equ 0x10
+
+; Offset for protected_entry in the kernel binary
+protected_entry_offset equ 0x8000
 
 ; -------------------------------------------------------------------
 ; Pad to 512 bytes + signature
