@@ -2,8 +2,10 @@
 bits 16
 org 0x7C00
 
+extern protected_main
+
 start:
-    cli. ; Disable interrupts during setup
+    cli ; Disable interrupts during setup
     xor ax,ax
     mov ds,ax
     mov es,ax
@@ -30,7 +32,7 @@ enable_a20:
     mov al, 0xD1
     out 0x64,al
 .wait2:
-    in al.0x64
+    in al,0x64
     test al,2
     jnz .wait2
     mov al,0xDF
